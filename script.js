@@ -1,3 +1,4 @@
+// All images from Genshin Impact
 const canvas = document.getElementById("myCanvas")
 const ctx = canvas.getContext("2d")
 
@@ -5,11 +6,11 @@ ctx.fillStyle = "#0095DD";
 ctx.lineWidth = 10
 ctx.strokeStyle = "#0d3678";
 
-var col = 6
-var row = 6
+var col = 8
+var row = 8
 
-var imageW = 40
-var imageH = 40
+var imageW = 80
+var imageH = 80
 var padding = 5
 
 var gridOffsetLeft = 75
@@ -67,27 +68,27 @@ ganyuImage.src = folder + "Ganyu.png"
 var ventiImage = new Image()
 ventiImage.src = folder + "Venti.png"
 
-images = [pyroImage, cryoImage, hydroImage, electroImage, anemoImage, geoImage, hutaoImage, ayakaImage, kokomiImage, ittoImage, raidenImage, kazuhaImage, yoimiyaImage, childeImage, albedoImage, yaeImage, ganyuImage, ventiImage]
+images = [pyroImage, cryoImage, hydroImage, electroImage, anemoImage, geoImage, hutaoImage, ayakaImage, kokomiImage, raidenImage, kazuhaImage, ittoImage, yoimiyaImage, ganyuImage, childeImage, yaeImage, ventiImage, albedoImage]
 
 var board = new Array(col)
 for (let c = 0; c < col; c++) {
   board[c] = new Array(row)
   for (let r = 0; r < row; r++) {
-    board[c][r] = Math.floor(6 * Math.random())
+    board[c][r] = {piece: Math.floor(6 * Math.random()), special:0}
   }
 }
 
 var clickedPieceC, clickedPieceR
 var click = 0
 
-var sleepTime = 100
+var sleepTime = 20
 
 // Wait until all images loaded
 counter = 0
-for (let i = 0; i < 12; i++) {
+for (let i = 0; i < 18; i++) {
   images[i].onload = function () {
     counter++
-    if (counter == 12) {
+    if (counter == 18) {
       console.log("all loaded")
       initialDraw()
     }
@@ -157,12 +158,12 @@ function clicked(e) {
 
 function updateBoard() {
   // Clear board
-  ctx.clearRect(0, 0, 400, 400)
+  ctx.clearRect(0, 0, 1000, 1000)
   for (let c = 0; c < col; c++) {
     for (let r = 0; r < row; r++) {
-      if (board[c][r] != -1) {
+      if (board[c][r].piece != -1) {
         ctx.beginPath()
-        ctx.drawImage(images[board[c][r]], gridOffsetLeft + imageW * c + padding * c, gridOffsetUp + pieceOffsetUp[c][r] + imageH * r + padding * r, imageW, imageH)
+        ctx.drawImage(images[board[c][r].piece + board[c][r].special], gridOffsetLeft + imageW * c + padding * c, gridOffsetUp + pieceOffsetUp[c][r] + imageH * r + padding * r, imageW, imageH)
         ctx.stroke()
         ctx.closePath()
       }
@@ -174,59 +175,214 @@ function updateBoard() {
 }
 
 function swap(c, r, clickedPieceC, clickedPieceR) {
-  var temp = board[c][r]
-  board[c][r] = board[clickedPieceC][clickedPieceR]
-  board[clickedPieceC][clickedPieceR] = temp
+  var temp = board[c][r].piece
+  board[c][r].piece = board[clickedPieceC][clickedPieceR].piece
+  board[clickedPieceC][clickedPieceR].piece = temp
+  temp = board[c][r].special
+  board[c][r].special = board[clickedPieceC][clickedPieceR].special
+  board[clickedPieceC][clickedPieceR].special = temp
 }
 
-function checkConsecutive() {
-  // Temp array to store all the pieces that need to be deleted
-  // First find every piece that need to be deleted, then delete everything at the same time to avoid problems
+function checkConsecutive2() {
   var temp = new Array(col);
   for (let c = 0; c < col; c++) {
     temp[c] = new Array(row);
     for (let r = 0; r < row; r++) {
-      temp[c][r] = 0;
+      temp[c][r] = -2;
+    }
+  }
+
+  for (let c = 0; c < col; c++) {
+    for (let r = 0; r < row; r++) {
+      // Five consecutives up down
+      if (r + 4 < row && board[c][r].piece == board[c][r + 1].piece && board[c][r].piece == board[c][r + 2].piece && board[c][r].piece == board[c][r + 3].piece && board[c][r].piece == board[c][r + 4].piece) {
+        temp[c][r] = -1
+        temp[c][r + 1] = -1
+        temp[c][r + 2] = -1
+        temp[c][r + 3] = -1
+        temp[c][r + 4] = -1
+      }
+      // Four consecutives up down
+      else if (r + 3 < row && board[c][r].piece == board[c][r + 1].piece && board[c][r].piece == board[c][r + 2].piece && board[c][r].piece == board[c][r + 3].piece && (r - 1 < 0 || (r - 1 >= 0 && board[c][r - 1].piece != board[c][r].piece))) {
+        temp[c][r] = -1
+        temp[c][r + 1] = -1
+        temp[c][r + 2] = board[c][r].piece
+        temp[c][r + 3] = -1
+        board[c][r].special = 0
+        board[c][r + 1].special = 0
+        board[c][r + 2].special = 12
+        board[c][r + 3].special = 0
+      }
+      // Three consecutives up down
+      else if (r + 2 < row && board[c][r].piece == board[c][r + 1].piece && board[c][r].piece == board[c][r + 2].piece && (r - 1 < 0 || (r - 1 >= 0 && board[c][r - 1].piece != board[c][r].piece))) {
+        // x x x
+        // x
+        // x
+        if (c + 2 < col && board[c][r].piece == board[c + 1][r].piece && board[c][r].piece == board[c + 2][r].piece) {
+          temp[c][r] = board[c][r].piece
+          temp[c][r + 1] = -1
+          temp[c][r + 2] = -1
+          temp[c + 1][r] = -1
+          temp[c + 2][r] = -1
+          board[c][r].special = 6
+          board[c][r + 1].special = 0
+          board[c][r + 2].special = 0
+          board[c + 1][r].special = 0
+          board[c + 2][r].special = 0
+        }
+        // x
+        // x
+        // x x x
+        else if (c - 2 >= 0 && board[c][r].piece == board[c - 1][r].piece && board[c][r].piece == board[c - 2][r].piece) {
+          temp[c][r] = board[c][r].piece
+          temp[c][r + 1] = -1
+          temp[c][r + 2] = -1
+          temp[c - 1][r] = -1
+          temp[c - 2][r] = -1
+          board[c][r].special = 6
+          board[c][r + 1].special = 0
+          board[c][r + 2].special = 0
+          board[c - 1][r].special = 0
+          board[c - 2][r].special = 0
+        }
+        // x x x
+        //     x
+        //     x
+        else if (c + 2 < col && board[c][r].piece == board[c + 1][r + 2].piece && board[c][r].piece == board[c + 2][r + 2].piece) {
+          temp[c][r] = -1
+          temp[c][r + 1] = -1
+          temp[c][r + 2] = board[c][r].piece
+          temp[c + 1][r + 2] = -1
+          temp[c + 2][r + 2] = -1
+          board[c][r].special = 0
+          board[c][r + 1].special = 0
+          board[c][r + 2].special = 6
+          board[c + 1][r + 2].special = 0
+          board[c + 2][r + 2].special = 0
+        }
+        //     x
+        //     x
+        // x x x
+        else if (c - 2 >= 0 && board[c][r].piece == board[c - 1][r + 2].piece && board[c][r].piece == board[c - 2][r + 2].piece) {
+          temp[c][r] = -1
+          temp[c][r + 1] = -1
+          temp[c][r + 2] = board[c][r].piece
+          temp[c - 1][r + 2] = -1
+          temp[c - 2][r + 2] = -1
+          board[c][r].special = 0
+          board[c][r + 1].special = 0
+          board[c][r + 2].special = 6
+          board[c - 1][r + 2].special = 0
+          board[c - 2][r + 2].special = 0
+        }
+        // x
+        // x x x 
+        // x
+        //     x 
+        // x x x
+        //     x
+        else {
+          temp[c][r] = -1
+          temp[c][r + 1] = -1
+          temp[c][r + 2] = -1
+        }
+      }
+      // Five consecutives left right
+      if (c + 4 < col && board[c][r].piece == board[c + 1][r].piece && board[c][r].piece == board[c + 2][r].piece && board[c][r].piece == board[c + 3][r].piece && board[c][r].piece == board[c + 4][r].piece) {
+        temp[c][r] = -1
+        temp[c + 1][r] = -1
+        temp[c + 2][r] = -1
+        temp[c + 3][r] = -1
+        temp[c + 4][r] = -1
+      }
+      // Four consecutives left right
+      else if (c + 3 < col && board[c][r].piece == board[c + 1][r].piece && board[c][r].piece == board[c + 2][r].piece && board[c][r].piece == board[c + 3][r].piece && (c - 1 < 0 || (c - 1 >= 0 && board[c - 1][r].piece != board[c][r].piece))) {
+        temp[c][r] = -1
+        temp[c + 1][r] = -1
+        temp[c + 2][r] = board[c][r].piece
+        temp[c + 3][r] = -1
+        board[c][r].special = 0
+        board[c + 1][r].special = 0
+        board[c + 2][r].special = 12
+        board[c + 3][r].special = 0
+      }
+      // Three consecutives left right
+      else if (c + 2 < col && board[c][r].piece == board[c + 1][r].piece && board[c][r].piece == board[c + 2][r].piece && (c - 1 < 0 || (c - 1 >= 0 && board[c - 1][r].piece != board[c][r].piece))) {
+        // x x x
+        // x
+        // x
+        if (r + 2 < row && board[c][r].piece == board[c][r + 1].piece && board[c][r].piece == board[c][r + 2].piece) {
+          temp[c][r] = board[c][r].piece
+          temp[c + 1][r] = -1
+          temp[c + 2][r] = -1
+          temp[c][r + 1] = -1
+          temp[c][r + 2] = -1
+          board[c][r] = 6
+          board[c + 1][r].special = 0
+          board[c + 2][r].special = 0
+          board[c][r + 1].special = 0
+          board[c][r + 2].special = 0
+        }
+        // x x x
+        //     x
+        //     x
+        else if (r - 2 >= 0 && board[c][r].piece == board[c][r - 1].piece && board[c][r].piece == board[c][r - 2].piece) {
+          temp[c][r] = board[c][r].piece
+          temp[c + 1][r] = -1
+          temp[c + 2][r] = -1
+          temp[c][r - 1] = -1
+          temp[c][r - 2] = -1
+          board[c][r].special = 6
+          board[c + 1][r].special = 0
+          board[c + 2][r].special = 0
+          board[c][r - 1].special = 0
+          board[c][r - 2].special = 0
+        }
+        // x 
+        // x 
+        // x x x
+        else if (r + 2 < row && board[c][r].piece == board[c + 2][r + 1].piece && board[c][r].piece == board[c + 2][r + 2].piece) {
+          temp[c][r] = -1
+          temp[c + 1][r] = -1
+          temp[c + 2][r] = board[c + 2][r] + 6
+          temp[c + 2][r + 1] = -1
+          temp[c + 2][r + 2] = -1
+          board[c][r].special = 0
+          board[c + 1][r].special = 0
+          board[c + 2][r].special = 6
+          board[c + 2][r + 1].special = 0
+          board[c + 2][r + 2].special = 0
+        }
+        //     x
+        //     x 
+        // x x x
+        else if (r - 2 >= 0 && board[c][r].piece == board[c + 2][r - 1].piece && board[c][r].piece == board[c + 2][r - 2].piece) {
+          temp[c][r] = -1
+          temp[c + 1][r] = -1
+          temp[c + 2][r] = board[c + 2][r]
+          temp[c + 2][r - 1] = -1
+          temp[c + 2][r - 2] = -1
+          board[c][r].special = 0
+          board[c + 1][r].special = 0
+          board[c + 2][r].special = 6
+          board[c + 2][r - 1].special = 0
+          board[c + 2][r - 2].special = 0
+        }
+        else {
+          temp[c][r] = -1
+          temp[c + 1][r] = -1
+          temp[c + 2][r] = -1
+        }
+      }
     }
   }
 
   var consecutiveBool = false
   for (let c = 0; c < col; c++) {
     for (let r = 0; r < row; r++) {
-      // Consecutives up down
-      if (r + 2 < row && board[c][r] != -1 && board[c][r] == board[c][r + 1] && board[c][r + 1] == board[c][r + 2]) {
-        if (r + 3 < row && board[c][r] == board[c][r + 3]) {
-          if (r + 4 < row && board[c][r] == board[c][r + 4]) {
-            temp[c][r + 4] = -1
-          }
-          temp[c][r + 3] = -1
-        }
-        temp[c][r + 2] = -1
-        temp[c][r + 1] = -1
-        temp[c][r] = -1
+      if (temp[c][r] != -2) {
         consecutiveBool = true
-      }
-      // Consecutives left right
-      if (c + 2 < col && board[c][r] != -1 && board[c][r] == board[c + 1][r] && board[c + 1][r] == board[c + 2][r]) {
-        if (c + 3 < col && board[c][r] == board[c + 3][r]) {
-          if (c + 4 < col && board[c][r] == board[c + 4][r]) {
-            temp[c + 4][r] = -1
-          }
-          temp[c + 3][r] = -1
-        }
-        temp[c + 2][r] = -1
-        temp[c + 1][r] = -1
-        temp[c][r] = -1
-        consecutiveBool = true
-      }
-    }
-  }
-
-  // Delete consecutive pieces
-  for (let c = 0; c < col; c++) {
-    for (let r = 0; r < row; r++) {
-      if (temp[c][r] == -1) {
-        board[c][r] = -1;
+        board[c][r].piece = temp[c][r]
       }
     }
   }
@@ -234,16 +390,16 @@ function checkConsecutive() {
   if (consecutiveBool) {
     consecutive = true
   }
+
   return consecutiveBool
-}
+}  
 
 // Async function to use await
 async function moveFunc() {
   // Remove event listener when the pieces are moving
   document.removeEventListener("click", clicked)
   // While loop checks for chain reactions
-  while (checkConsecutive()) {
-    console.log("consecutive")
+  while (checkConsecutive2()) {
     // Move down one row every 500 milliseconds
     while (checkMove2()) {
       for (let i = 0; i < 8; i++) {
@@ -275,13 +431,13 @@ function moveDown() {
     var index = 0
     var temp = []
     for (let r = 0; r < row; r++) {
-      if (board[c][r] != -1) {
-        temp[index] = board[c][r]
+      if (board[c][r].piece != -1) {
+        temp[index] = board[c][r].piece
         index++
       }
     }
     for (let r = 0; r < row; r++) {
-      board[c][r] = -1
+      board[c][r].piece = -1
     }
     for (let r = 0; r < index; r++) {
       board[c][r + row - index] = temp[r]
@@ -289,43 +445,49 @@ function moveDown() {
   }
 }
 
-// Not using anymore
-// Using moveAnimation instead
 // Moves down by once
 function moveDownOne() {
   for (let c = 0; c < col; c++) {
     var empty = false
     var temp = new Array(row)
     var index = row - 1
+    for (let r = 0; r < row; r++) {
+      temp[r] = {piece: 0, special: 0}
+    }
     // Delete one empty element (-1) from each empty range
     for (let r = row - 1; r > -1; r--) {
-      if (!empty && board[c][r] == -1) {
+      if (!empty && board[c][r].piece == -1) {
         empty = true
       }
-      else if (empty && board[c][r] == -1) {
-        temp[index] = -1
+      else if (empty && board[c][r].piece == -1) {
+        temp[index].piece = -1
+        temp[index].special = 0
         index--
       }
-      else if (!empty && board[c][r] != -1) {
-        temp[index] = board[c][r]
+      else if (!empty && board[c][r].piece != -1) {
+        temp[index].piece = board[c][r].piece
+        temp[index].special = board[c][r].special
         index--
       }
-      else if (empty && board[c][r] != -1) {
-        temp[index] = board[c][r]
+      else if (empty && board[c][r].piece != -1) {
+        temp[index].piece = board[c][r].piece
+        temp[index].special = board[c][r].special
         index--
         empty = false
       }
     }
     for (let r = row - 1; r > -1; r--) {
-      board[c][r] = -1
+      board[c][r].piece = -1
+      board[c][r].special = 0
     }
     for (let r = row - 1; r > index; r--) {
-      board[c][r] = temp[r]
+      board[c][r].piece = temp[r].piece
+      board[c][r].special = temp[r].special
     }
 
     // Add random piece to the top
-    if (board[c][0] == -1) {
-      board[c][0] = Math.floor(6 * Math.random())
+    if (board[c][0].piece == -1) {
+      board[c][0].piece = Math.floor(6 * Math.random())
     }
   }
 }
@@ -334,13 +496,13 @@ function moveAnimation() {
   for (let c = 0; c < col; c++) {
     var index = -1
     for (let r = row - 1; r > -1; r--) {
-      if (board[c][r] == -1) {
+      if (board[c][r].piece == -1) {
         index = r
         break
       }
     }
     for (let r = index; r > -1; r--) {
-      if (board[c][r] != -1) {
+      if (board[c][r].piece != -1) {
         pieceOffsetUp[c][r] += 5
       }
     }
@@ -353,11 +515,11 @@ function checkMove1() {
   var needMove = false
   for (let c = 0; c < col; c++) {
     var r = 0
-    while (board[c][r] == -1 && r < row) {
+    while (board[c][r].piece == -1 && r < row) {
       r++;
     }
     while (r < row) {
-      if (board[c][r] == -1) {
+      if (board[c][r].piece == -1) {
         needMove = true
         break;
       }
@@ -371,7 +533,7 @@ function checkMove1() {
 function checkMove2() {
   for (let c = 0; c < col; c++) {
     for (let r = 0; r < row; r++) {
-      if (board[c][r] == -1) {
+      if (board[c][r].piece == -1) {
         return true
       }
     }
@@ -403,7 +565,7 @@ function checkWin(board) {
   var empty = true
   for (let c = 0; c < col; c++) {
     for (let r = 0; r < row; r++) {
-      if (board[c][r] != -1) {
+      if (board[c][r].piece != -1) {
         empty = false
       }
     }
@@ -423,5 +585,5 @@ function checkWin(board) {
 // https://stackoverflow.com/questions/951021/what-is-the-javascript-version-of-sleep/39914235#39914235
 // Alternative to setTimeout
 function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms))
+  return new Promise(resolve => setTimeout(resolve, ms))
 }
