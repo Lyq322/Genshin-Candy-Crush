@@ -56,6 +56,7 @@ function initialDraw() {
   updateBoard(board)
   ctx.strokeRect(offsetLeft - 10, offsetUp - 10, col * imageW + (col - 1) * padding + 20, row * imageH + (row - 1) * padding + 20)
   document.addEventListener("click", clicked, false);
+  moveFunc()
 }
 
 function clicked(e) {
@@ -78,18 +79,12 @@ function clicked(e) {
         else {
           if ((c == clickedPieceC && r == clickedPieceR + 1) || (c == clickedPieceC && r == clickedPieceR - 1) || (c == clickedPieceC + 1 && r == clickedPieceR) || (c == clickedPieceC - 1 && r == clickedPieceR)) {
             swap(c, r, clickedPieceC, clickedPieceR)
-            setTimeout(function() {
-              var consecutive = false
-              while (checkConsecutive()) {
-                consecutive = true
-                console.log("r")
-                moveRecursive()
-              }
-              if (!consecutive) {
-                swap(c, r, clickedPieceC, clickedPieceR)
-                updateBoard()
-              }
-            }, 500)
+            updateBoard()
+            var consecutive = moveFunc()
+            if (!consecutive) {
+              swap(c, r, clickedPieceC, clickedPieceR)
+              updateBoard()
+            }
           }
           else if (c == clickedPieceC && r == clickedPieceR) {
             updateBoard()
@@ -170,6 +165,20 @@ function checkConsecutive() {
         board[c][r] = -1;
       }
     }
+  }
+  return consecutive
+}
+
+async function moveFunc() {
+  var consecutive = false
+  while (checkConsecutive()) {
+    consecutive = true
+    while (checkMove2()) {
+      await sleep(500)
+      moveDownOne()
+      updateBoard()
+    }
+    await sleep(500)
   }
   return consecutive
 }
@@ -295,5 +304,5 @@ function checkWin(board) {
 
 // https://stackoverflow.com/questions/951021/what-is-the-javascript-version-of-sleep/39914235#39914235
 function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms))
 }
