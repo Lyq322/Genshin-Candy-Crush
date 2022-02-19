@@ -25,6 +25,8 @@ for (let c = 0; c < col; c++) {
   }
 }
 
+var consecutive = false
+
 // Images for the game pieces
 var folder = "images/"
 var pyroImage = new Image()
@@ -67,7 +69,6 @@ ventiImage.src = folder + "Venti.png"
 
 images = [pyroImage, cryoImage, hydroImage, electroImage, anemoImage, geoImage, hutaoImage, ayakaImage, kokomiImage, ittoImage, raidenImage, kazuhaImage, yoimiyaImage, childeImage, albedoImage, yaeImage, ganyuImage, ventiImage]
 
-
 var board = new Array(col)
 for (let c = 0; c < col; c++) {
   board[c] = new Array(row)
@@ -79,7 +80,7 @@ for (let c = 0; c < col; c++) {
 var clickedPieceC, clickedPieceR
 var click = 0
 
-var sleepTime = 20
+var sleepTime = 100
 
 // Wait until all images loaded
 counter = 0
@@ -132,7 +133,8 @@ function clicked(e) {
             updateBoard()
 
             // Check for consecutives, remove them, and move pieces down
-            var consecutive = moveFunc()
+            consecutive = false
+            moveFunc()
             
             // Don't swap if same click or click not valid
             if (!consecutive) {
@@ -188,7 +190,7 @@ function checkConsecutive() {
     }
   }
 
-  var consecutive = false
+  var consecutiveBool = false
   for (let c = 0; c < col; c++) {
     for (let r = 0; r < row; r++) {
       // Consecutives up down
@@ -202,7 +204,7 @@ function checkConsecutive() {
         temp[c][r + 2] = -1
         temp[c][r + 1] = -1
         temp[c][r] = -1
-        consecutive = true
+        consecutiveBool = true
       }
       // Consecutives left right
       if (c + 2 < col && board[c][r] != -1 && board[c][r] == board[c + 1][r] && board[c + 1][r] == board[c + 2][r]) {
@@ -215,7 +217,7 @@ function checkConsecutive() {
         temp[c + 2][r] = -1
         temp[c + 1][r] = -1
         temp[c][r] = -1
-        consecutive = true
+        consecutiveBool = true
       }
     }
   }
@@ -228,39 +230,46 @@ function checkConsecutive() {
       }
     }
   }
-  return consecutive
+
+  if (consecutiveBool) {
+    consecutive = true
+  }
+  return consecutiveBool
 }
 
 // Async function to use await
 async function moveFunc() {
-  var consecutive = false
-  // Checks for chain reactions
+  // Remove event listener when the pieces are moving
+  document.removeEventListener("click", clicked)
+  // While loop checks for chain reactions
   while (checkConsecutive()) {
-    consecutive = true
+    console.log("consecutive")
     // Move down one row every 500 milliseconds
     while (checkMove2()) {
       for (let i = 0; i < 8; i++) {
         await sleep(sleepTime)
-        //moveDownOne()
         moveAnimation()
         updateBoard()
       }
+      
       for (let c = 0; c < col; c++) {
         for (let r = 0; r < row; r++) {
           pieceOffsetUp[c][r] = 0
         }
       }
+
       await sleep(sleepTime)
+
       moveDownOne()
       updateBoard()
     }
     await sleep(sleepTime)
   }
-  return consecutive
+  document.addEventListener("click", clicked, false);
 }
 
 // Not using anymore
-// Using moveDownOne instead
+// Using moveAnimation instead
 function moveDown() {
   for (let c = 0; c < col; c++) {
     var index = 0
@@ -280,6 +289,8 @@ function moveDown() {
   }
 }
 
+// Not using anymore
+// Using moveAnimation instead
 // Moves down by once
 function moveDownOne() {
   for (let c = 0; c < col; c++) {
