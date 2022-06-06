@@ -1,4 +1,4 @@
-// All images from Genshin Impact
+// All images are from Genshin Impact
 const canvas = document.getElementById("myCanvas")
 const ctx = canvas.getContext("2d")
 
@@ -9,8 +9,8 @@ ctx.strokeStyle = "#0d3678";
 var col = 8
 var row = 8
 
-var imageW = 80
-var imageH = 80
+var imageW = 40
+var imageH = 40
 var padding = 5
 
 var gridOffsetLeft = 75
@@ -183,7 +183,7 @@ function swap(c, r, clickedPieceC, clickedPieceR) {
   board[clickedPieceC][clickedPieceR].special = temp
 }
 
-function checkConsecutive2() {
+function checkConsecutive() {
   var temp = new Array(col);
   for (let c = 0; c < col; c++) {
     temp[c] = new Array(row);
@@ -230,9 +230,9 @@ function checkConsecutive2() {
           board[c + 1][r].special = 0
           board[c + 2][r].special = 0
         }
-        // x
-        // x
         // x x x
+        //     x
+        //     x
         else if (c - 2 >= 0 && board[c][r].piece == board[c - 1][r].piece && board[c][r].piece == board[c - 2][r].piece) {
           temp[c][r] = board[c][r].piece
           temp[c][r + 1] = -1
@@ -245,9 +245,9 @@ function checkConsecutive2() {
           board[c - 1][r].special = 0
           board[c - 2][r].special = 0
         }
+        // x
+        // x
         // x x x
-        //     x
-        //     x
         else if (c + 2 < col && board[c][r].piece == board[c + 1][r + 2].piece && board[c][r].piece == board[c + 2][r + 2].piece) {
           temp[c][r] = -1
           temp[c][r + 1] = -1
@@ -278,9 +278,60 @@ function checkConsecutive2() {
         // x
         // x x x 
         // x
+        else if (c + 2 < col && board[c][r].piece == board[c + 1][r + 1].piece && board[c][r].piece == board[c + 2][r + 1].piece) {
+          temp[c][r] = -1
+          temp[c][r + 1] = board[c][r].piece
+          temp[c][r + 2] = -1
+          temp[c + 1][r + 1] = -1
+          temp[c + 2][r + 1] = -1
+          board[c][r].special = 0
+          board[c][r + 1].special = 6
+          board[c][r + 2].special = 0
+          board[c + 1][r + 1].special = 0
+          board[c + 2][r + 1].special = 0
+        }
         //     x 
         // x x x
         //     x
+        else if (c - 2 >= 0 && board[c][r].piece == board[c - 1][r + 1].piece && board[c][r].piece == board[c - 2][r + 1].piece) {
+          temp[c][r] = -1
+          temp[c][r + 1] = board[c][r].piece
+          temp[c][r + 2] = -1
+          temp[c - 1][r + 1] = -1
+          temp[c - 2][r + 1] = -1
+          board[c][r].special = 0
+          board[c][r + 1].special = 6
+          board[c][r + 2].special = 0
+          board[c - 1][r + 1].special = 0
+          board[c - 2][r + 1].special = 0
+        }
+        // x x x
+        //   x
+        //   x
+        else if (c + 1 < col && c - 1 >= 0 && board[c][r].piece == board[c + 1][r].piece && board[c - 1][r].piece) {
+          temp[c][r] = board[c][r].piece
+          temp[c][r + 1] = -1
+          temp[c][r + 2] = -1
+          temp[c - 1][r] = -1
+          temp[c + 1][r] = -1
+          board[c][r].special = 6
+          board[c][r + 1].special = 0
+          board[c][r + 2].special = 0
+          board[c - 1][r].special = 0
+          board[c + 1][r].special = 0
+        }
+        else if (c + 1 < col && c - 1 >= 0 && board[c][r].piece == board[c + 1][r + 2].piece && board[c][r].piece == board[c - 1][r + 2].piece) {
+          temp[c][r] = -1
+          temp[c][r + 1] = -1
+          temp[c][r + 2] = board[c][r].piece
+          temp[c - 1][r + 2] = -1
+          temp[c + 1][r + 2] = -1
+          board[c][r].special = 6
+          board[c][r + 1].special = 0
+          board[c][r + 2].special = 0
+          board[c - 1][r + 2].special = 0
+          board[c + 1][r + 2].special = 0
+        }
         else {
           temp[c][r] = -1
           temp[c][r + 1] = -1
@@ -317,15 +368,15 @@ function checkConsecutive2() {
           temp[c + 2][r] = -1
           temp[c][r + 1] = -1
           temp[c][r + 2] = -1
-          board[c][r] = 6
+          board[c][r].special = 6
           board[c + 1][r].special = 0
           board[c + 2][r].special = 0
           board[c][r + 1].special = 0
           board[c][r + 2].special = 0
         }
+        // x 
+        // x 
         // x x x
-        //     x
-        //     x
         else if (r - 2 >= 0 && board[c][r].piece == board[c][r - 1].piece && board[c][r].piece == board[c][r - 2].piece) {
           temp[c][r] = board[c][r].piece
           temp[c + 1][r] = -1
@@ -338,9 +389,9 @@ function checkConsecutive2() {
           board[c][r - 1].special = 0
           board[c][r - 2].special = 0
         }
-        // x 
-        // x 
         // x x x
+        //     x
+        //     x
         else if (r + 2 < row && board[c][r].piece == board[c + 2][r + 1].piece && board[c][r].piece == board[c + 2][r + 2].piece) {
           temp[c][r] = -1
           temp[c + 1][r] = -1
@@ -367,6 +418,66 @@ function checkConsecutive2() {
           board[c + 2][r].special = 6
           board[c + 2][r - 1].special = 0
           board[c + 2][r - 2].special = 0
+        }
+        // x
+        // x x x 
+        // x
+        else if (r - 1 >= 0 && r + 1 < row && board[c][r].piece == board[c][r - 1].piece && board[c][r].piece == board[c][r + 1].piece) {
+          temp[c][r] = board[c][r].piece
+          temp[c + 1][r] = -1
+          temp[c + 2][r] = -1
+          temp[c][r + 1] = -1
+          temp[c][r - 1] = -1
+          board[c][r].special = 6
+          board[c + 1][r].special = 0
+          board[c + 2][r].special = 0
+          board[c][r - 1].special = 0
+          board[c][r + 1].special = 0
+        }
+        //     x
+        // x x x
+        //     x
+        else if (r - 1 >= 0 && r + 1 < row && board[c][r].piece == board[c + 2][r - 1].piece && board[c][r].piece == board[c + 2][r + 1].piece) {
+          temp[c][r] = -1
+          temp[c + 1][r] = -1
+          temp[c + 2][r] = board[c][r].piece
+          temp[c + 2][r + 1] = -1
+          temp[c + 2][r - 1] = -1
+          board[c][r].special = 0
+          board[c + 1][r].special = 0
+          board[c + 2][r].special = 6
+          board[c + 2][r - 1].special = 0
+          board[c + 2][r + 1].special = 0
+        }
+        // x x x
+        //   x
+        //   x
+        else if (r + 2 < row && board[c][r].piece == board[c + 1][r + 1].piece && board[c][r].piece == board[c + 1][r + 2].piece) {
+          temp[c][r] = -1
+          temp[c + 1][r] = board[c][r].piece
+          temp[c + 2][r] = -1
+          temp[c + 1][r + 1] = -1
+          temp[c + 1][r + 2] = -1
+          board[c][r].special = 0
+          board[c + 1][r].special = 6
+          board[c + 2][r].special = 0
+          board[c + 1][r + 1].special = 0
+          board[c + 1][r + 2].special = 0
+        }
+        //   x
+        //   x
+        // x x x
+        else if (r - 2 >= 0 && board[c][r].piece == board[c + 1][r - 1].piece && board[c][r].piece == board[c + 1][r - 2].piece) {
+          temp[c][r] = -1
+          temp[c + 1][r] = board[c][r].piece
+          temp[c + 2][r] = -1
+          temp[c + 1][r - 1] = -1
+          temp[c + 1][r - 2] = -1
+          board[c][r].special = 0
+          board[c + 1][r].special = 6
+          board[c + 2][r].special = 0
+          board[c + 1][r - 1].special = 0
+          board[c + 1][r - 2].special = 0
         }
         else {
           temp[c][r] = -1
@@ -399,7 +510,7 @@ async function moveFunc() {
   // Remove event listener when the pieces are moving
   document.removeEventListener("click", clicked)
   // While loop checks for chain reactions
-  while (checkConsecutive2()) {
+  while (checkConsecutive()) {
     // Move down one row every 500 milliseconds
     while (checkMove2()) {
       for (let i = 0; i < 8; i++) {
@@ -425,7 +536,7 @@ async function moveFunc() {
 }
 
 // Not using anymore
-// Using moveAnimation instead
+// Using moveFunc instead
 function moveDown() {
   for (let c = 0; c < col; c++) {
     var index = 0
